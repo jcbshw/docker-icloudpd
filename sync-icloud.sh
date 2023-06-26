@@ -245,8 +245,8 @@ Initialise(){
       LogInfo "Download directory does not exist."
       LogInfo "Creating ${download_path} and configuring permissions."
       mkdir --parents "${download_path}"
-      SetOwnerAndPermissionsDownloads
    fi
+   SetOwnerAndPermissionsDownloads
    LogInfo "Folder structure: ${folder_structure:={:%Y/%m/%d\}}"
    LogDebug "Directory permissions: ${directory_permissions:=750}"
    LogDebug "File permissions: ${file_permissions:=640}"
