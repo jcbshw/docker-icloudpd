@@ -22,6 +22,6 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build the Docker image
       run: |
-       docker build . --tag ghcr.io/jcbshw/icloud-pd:latest
+       docker buildx build . --tag ghcr.io/jcbshw/icloud-pd:latest
        docker run ghcr.io/jcbshw/icloud-pd:latest
        docker push ghcr.io/jcbshw/icloud-pd:latest
