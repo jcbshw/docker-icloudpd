@@ -16,6 +16,7 @@ echo "$(date '+%d/%m/%Y - %H:%M:%S') | Clone ${app_repo}" && \
    app_temp_dir=$(mktemp -d) && \
    git clone -b master "https://github.com/${app_repo}.git" "${app_temp_dir}" && \
    cd "${app_temp_dir}" && \
+   git checkout d1644ad && \
 echo "$(date '+%d/%m/%Y - %H:%M:%S') | Install iOS 16 Shared Libraries patch" && \
    curl https://patch-diff.githubusercontent.com/raw/icloud-photos-downloader/icloud_photos_downloader/pull/489.patch | git apply && \
 echo "$(date '+%d/%m/%Y - %H:%M:%S') | Install Python dependencies" && \
