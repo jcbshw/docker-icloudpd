@@ -32,7 +32,7 @@ initialise_config_file(){
       if [ "$(grep -c "notification_days=" "${config_file}")" -eq 0 ]; then echo notification_days="${notification_days:=7}"; fi
       if [ "$(grep -c "notification_type=" "${config_file}")" -eq 0 ]; then echo notification_type="${notification_type}"; fi
       if [ "$(grep -c "photo_album=" "${config_file}")" -eq 0 ]; then echo photo_album="${photo_album}"; fi
-      #if [ "$(grep -c "photo_library=" "${config_file}")" -eq 0 ]; then echo photo_library="${photo_library}"; fi
+      if [ "$(grep -c "photo_library=" "${config_file}")" -eq 0 ]; then echo photo_library="${photo_library}"; fi
       if [ "$(grep -c "photo_size=" "${config_file}")" -eq 0 ]; then echo photo_size="${photo_size:=original}"; fi
       if [ "$(grep -c "prowl_api_key=" "${config_file}")" -eq 0 ]; then echo prowl_api_key="${prowl_api_key}"; fi
       if [ "$(grep -c "pushover_sound=" "${config_file}")" -eq 0 ]; then echo pushover_sound="${pushover_sound}"; fi
@@ -96,7 +96,7 @@ initialise_config_file(){
    if [ "${notification_days}" ]; then sed -i "s%^notification_days=.*%notification_days=${notification_days}%" "${config_file}"; fi
    if [ "${notification_type}" ]; then sed -i "s%^notification_type=.*%notification_type=${notification_type}%" "${config_file}"; fi
    if [ "${photo_album}" ]; then sed -i "s%^photo_album=.*%photo_album=\"${photo_album}\"%" "${config_file}"; fi
-   #if [ "${photo_library}" ]; then sed -i "s%^photo_library=.*%photo_library=${photo_library}%" "${config_file}"; fi
+   if [ "${photo_library}" ]; then sed -i "s%^photo_library=.*%photo_library=${photo_library}%" "${config_file}"; fi
    if [ "${photo_size}" ]; then sed -i "s%^photo_size=.*%photo_size=${photo_size}%" "${config_file}"; fi
    if [ "${prowl_api_key}" ]; then sed -i "s%^prowl_api_key=.*%prowl_api_key=${prowl_api_key}%" "${config_file}"; fi
    if [ "${pushover_sound}" ]; then sed -i "s%^pushover_sound=.*%pushover_sound=${pushover_sound}%" "${config_file}"; fi
@@ -290,8 +290,8 @@ Initialise(){
    fi
    if [ "${photo_album}" ]; then
       LogInfo "Downloading photos from album(s): ${photo_album}"
-   # elif [ "${photo_library}" ]; then
-      # LogInfo "Downloading photos from library: ${photo_library}"
+   elif [ "${photo_library}" ]; then
+      LogInfo "Downloading photos from library: ${photo_library}"
    else
       LogInfo "Downloading photos from album: Download All Photos"
    fi
@@ -626,16 +626,16 @@ CreateUser(){
    fi
 }
 
-# ListLibraries(){
-   # LogInfo "Shared libraries available:"
-   # source /opt/icloudpd_latest/bin/activate
-   # LogDebug "Switched to icloudpd: $(icloudpd --version | awk '{print $3}')"
-   # shared_libraries="$(su "${user}" -c 'icloudpd --username "${0}" --cookie-directory "${1}" --domain "${2}" --directory /dev/null --list-libraries | sed "1d"' -- "${apple_id}" "${config_dir}" "${auth_domain}")"
-   # deactivate
-   # for library in ${shared_libraries}; do
-      # LogInfo " - ${library}"
-   # done
-# }
+ListLibraries(){
+   LogInfo "Shared libraries available:"
+   source /opt/icloudpd_latest/bin/activate
+   LogDebug "Switched to icloudpd: $(icloudpd --version | awk '{print $3}')"
+   shared_libraries="$(su "${user}" -c 'icloudpd --username "${0}" --cookie-directory "${1}" --domain "${2}" --directory /dev/null --list-libraries | sed "1d"' -- "${apple_id}" "${config_dir}" "${auth_domain}")"
+   deactivate
+   for library in ${shared_libraries}; do
+      LogInfo " - ${library}"
+   done
+}
 
 ListAlbums(){
    IFS=$'\n'
@@ -1356,11 +1356,11 @@ CommandLineBuilder(){
    if [ -z "${photo_album}" ]; then
       command_line="${command_line} --folder-structure ${folder_structure}"
    fi
-   # if [ "${photo_album}" ]; then
-      # command_line="${command_line} --album ${photo_album}"
-   # elif [ "${photo_library}" ]; then
-      # command_line="${command_line} --library ${photo_library}"
-   # fi
+   if [ "${photo_album}" ]; then
+      command_line="${command_line} --album ${photo_album}"
+   elif [ "${photo_library}" ]; then
+      command_line="${command_line} --library ${photo_library}"
+   fi
    if [ "${until_found}" ]; then
       command_line="${command_line} --until-found ${until_found}"
    fi
@@ -1579,9 +1579,9 @@ case  "$(echo ${script_launch_parameters} | tr [:upper:] [:lower:])" in
    "--disabledebugging")
       disable_debugging=true
    ;;
-   # "--listlibraries")
-      # list_libraries=true
-   # ;;
+   "--listlibraries")
+      list_libraries=true
+   ;;
    *)
    ;;
 esac
@@ -1629,9 +1629,9 @@ elif [ "${correct_jpeg_time_stamps}" ]; then
    CorrectJPEGTimestamps
    LogInfo "JPEG timestamp correction complete"
    exit 0
-# elif [ "${list_libraries}" ];then
-   # ListLibraries
-   # exit 0
+elif [ "${list_libraries}" ];then
+   ListLibraries
+   exit 0
 fi
 CheckMount
 SetOwnerAndPermissionsConfig
